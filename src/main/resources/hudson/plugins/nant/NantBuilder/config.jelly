@@ -1,0 +1,25 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<!--
+		This script defines the view on the project builders section for Nant Builder.
+		
+		There is an error with the hello-world example.  You must use instance.propertyName
+		and not builder.propertyName in order to call a getter method for a property
+		in your plugin class.  I believe that this is just a problem with the hello-world 
+		example	being our of date.
+	-->
+	
+	<f:entry title="NAnt Version">
+	    <select class="setting-input" name="nantBuilder.nantName">
+	      <option>(Default)</option>
+	      <j:forEach var="inst" items="${descriptor.installations}">
+	        <f:option selected="${inst.name==instance.nantName}">${inst.name}</f:option>
+	      </j:forEach>
+	    </select>
+  	</f:entry>
+	<f:entry title="Nant Build File" help="${rootURL}/../plugin/nant/help-BuildFile.html">
+		<f:textbox name="nantBuilder.nantBuildFile" value="${instance.nantBuildFile}" />
+	</f:entry>
+	<f:entry title="Targets" help="${rootURL}/../plugin/nant/help-Targets.html">
+		<f:textbox name="nantBuilder.targets" value="${instance.targets}" />
+	</f:entry>
+</j:jelly>
