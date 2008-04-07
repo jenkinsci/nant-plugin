@@ -18,7 +18,7 @@
 		          <f:entry title="NANT_HOME" help="${rootURL}/../plugin/nant/help-globalConfig-NANT_HOME.html">
 		            <input class="setting-input validated" name="nant_home"
 		              type="text" value="${inst.nantHome}"
-		              checkUrl="'plugin/nant/checkNantHome?value='+escape(this.value)"/>
+		              checkUrl="'${rootURL}/builder/NantBuilder/checkNantHome?value='+escape(this.value)"/>
 		          </f:entry>
 		          <f:entry title="">
 		            <div align="right">
