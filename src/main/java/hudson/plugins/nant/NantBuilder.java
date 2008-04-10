@@ -3,10 +3,13 @@ package hudson.plugins.nant;
 import hudson.CopyOnWrite;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.Launcher.LocalLauncher;
+import hudson.remoting.Callable;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
 import hudson.model.Project;
+import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
@@ -29,7 +32,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
  * and a new {@link NantBuilder} is created. The created
  * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
+ * XStream, so this allows you to use instance fields (like {@link #nantName})
  * to remember the configuration.
  *
  * <p>
@@ -103,7 +106,7 @@ public class NantBuilder extends Builder {
     	return nantName;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         Project proj = build.getProject();
         ArgumentListBuilder args = new ArgumentListBuilder();
         
@@ -118,12 +121,7 @@ public class NantBuilder extends Builder {
         if(ni==null) {
             args.add(execName);
         } else {
-            File exec = ni.getExecutable();
-            if(!ni.getExists()) {
-                listener.fatalError(exec+" doesn't exist");
-                return false;
-            }
-            args.add(exec.getPath());
+            args.add(ni.getExecutable(launcher));
         }
         
         //If a nant build file is specified, then add it as an argument, otherwise
@@ -293,7 +291,18 @@ public class NantBuilder extends Builder {
             return name;
         }
 
-        public File getExecutable() {
+        public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
+            return launcher.getChannel().call(new Callable<String,IOException>() {
+                public String call() throws IOException {
+                    File exe = getExeFile();
+                    if(exe.exists())
+                        return exe.getPath();
+                    throw new IOException(exe.getPath()+" doesn't exist");
+                }
+            });
+        }
+
+        private File getExeFile() {
             String execName;
             if(File.separatorChar=='\\')
                 execName = "NAnt.exe";
@@ -306,8 +315,13 @@ public class NantBuilder extends Builder {
         /**
          * Returns true if the executable exists.
          */
-        public boolean getExists() {
-            return getExecutable().exists();
+        public boolean getExists() throws IOException, InterruptedException {
+            LocalLauncher launcher = new LocalLauncher(TaskListener.NULL);
+            return launcher.getChannel().call(new Callable<Boolean,IOException>() {
+                public Boolean call() throws IOException {
+                    return getExeFile().exists();
+                }
+            });
         }
     }
 }
