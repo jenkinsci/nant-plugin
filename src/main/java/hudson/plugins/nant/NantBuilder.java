@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 /**
  * Sample {@link Builder}.
  *
@@ -233,7 +235,10 @@ public class NantBuilder extends Builder {
             save();
             return true;
         }
-        
+
+        public Builder newInstance(StaplerRequest req, JSONObject o) {
+            return req.bindParameters(NantBuilder.class,"nantBuilder.");
+        }
         //
         // web methods
         //
