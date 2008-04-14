@@ -2,27 +2,27 @@ package hudson.plugins.nant;
 
 import hudson.CopyOnWrite;
 import hudson.Launcher;
-import hudson.Util;
 import hudson.Launcher.LocalLauncher;
-import hudson.remoting.Callable;
+import hudson.Util;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
-import hudson.model.Project;
 import hudson.model.TaskListener;
+import hudson.remoting.Callable;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormFieldValidator;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+
+import javax.servlet.ServletException;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Sample {@link Builder}.
@@ -106,8 +106,8 @@ public class NantBuilder extends Builder {
     	return nantName;
     }
 
-    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        Project proj = build.getProject();
+    public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+        AbstractProject proj = build.getProject();
         ArgumentListBuilder args = new ArgumentListBuilder();
         
         String execName;
@@ -201,7 +201,7 @@ public class NantBuilder extends Builder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Invoke top-level Nant targets";
+            return Messages.NantBuilder_DisplayName();
         }
         
         public NantInstallation[] getInstallations() {
@@ -237,38 +237,33 @@ public class NantBuilder extends Builder {
         //
         // web methods
         //
-            /**
-             * Checks if the NANT_HOME is valid.
-             */
-            public void doCheckNantHome( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
-                // this can be used to check the existence of a file on the server, so needs to be protected
-                new FormFieldValidator(req,rsp,true) {
-                    public void check() throws IOException, ServletException {
-                        File f = getFileParameter("value");
-                        if(!f.isDirectory()) {
-                            error(f+" is not a directory");
-                            return;
-                        }
-
-                        File nantExe = new File(f,"bin/NAnt.exe");
-                        if(!nantExe.exists()) {
-                            error(f+" is not a NAnt installation directory.");
-                            return;
-                        }
-
-                        ok();
-                    }
-                }.process();
-            }
-
-      
-        public Builder newInstance(StaplerRequest req) {
-            return req.bindParameters(NantBuilder.class,"nantBuilder.");
-        }
         
+        /**
+         * Checks if the NANT_HOME is valid.
+         */
+        public void doCheckNantHome( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+            // this can be used to check the existence of a file on the server, so needs to be protected
+            new FormFieldValidator(req,rsp,true) {
+                public void check() throws IOException, ServletException {
+                    File f = getFileParameter("value");
+                    if(!f.isDirectory()) {
+                        error(f+" is not a directory");
+                        return;
+                    }
+
+                    File nantExe = new File(f,"bin/NAnt.exe");
+                    if(!nantExe.exists()) {
+                        error(f+" is not a NAnt installation directory.");
+                        return;
+                    }
+
+                    ok();
+                }
+            }.process();
+        }
     }
     
-    public static final class NantInstallation {
+    public static final class NantInstallation implements Serializable {
         private final String name;
         private final String nantHome;
 
@@ -323,5 +318,7 @@ public class NantBuilder extends Builder {
                 }
             });
         }
+
+        private static final long serialVersionUID = 1L;
     }
 }
