@@ -236,9 +236,6 @@ public class NantBuilder extends Builder {
             return true;
         }
 
-        public Builder newInstance(StaplerRequest req, JSONObject o) {
-            return req.bindParameters(NantBuilder.class,"nantBuilder.");
-        }
         //
         // web methods
         //
