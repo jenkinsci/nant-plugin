@@ -11,5 +11,5 @@
   <packaging>hpi</packaging>
   <version>1.2-SNAPSHOT</version>
   <name>Hudson NAnt Plugin</name>
-  <url>http://hudson.gotdns.com/wiki/display/HUDSON/NAnt+Plugin</url>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/NAnt+Plugin</url>
 </project>
