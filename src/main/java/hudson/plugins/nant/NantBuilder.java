@@ -114,7 +114,7 @@ public class NantBuilder extends Builder {
         
         String execName;
         if(launcher.isUnix())
-            execName = "NAnt";
+            execName = "nant";
         else
             execName = "NAnt.exe";
 
