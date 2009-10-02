@@ -1,24 +1,23 @@
 package hudson.plugins.nant;
 
 import hudson.CopyOnWrite;
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Descriptor;
+import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -109,7 +108,6 @@ public class NantBuilder extends Builder {
     }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        AbstractProject proj = build.getProject();
         ArgumentListBuilder args = new ArgumentListBuilder();
         
         String execName;
@@ -148,9 +146,9 @@ public class NantBuilder extends Builder {
 
         //Try to execute the command
     	listener.getLogger().println("Executing command: "+args.toString());
-    	Map<String,String> env = build.getEnvVars();
+    	Map<String,String> env = build.getEnvironment(listener);
         try {
-            int r = launcher.launch(args.toCommandArray(),env,listener.getLogger(),proj.getModuleRoot()).join();
+            int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
             return r==0;
         } catch (IOException e) {
             Util.displayIOException(e,listener);
@@ -159,6 +157,7 @@ public class NantBuilder extends Builder {
         }
     }
 
+    @Override
     public Descriptor<Builder> getDescriptor() {
         // see Descriptor javadoc for more about what a descriptor is.
         return DESCRIPTOR;
@@ -167,6 +166,7 @@ public class NantBuilder extends Builder {
     /**
      * Descriptor should be singleton.
      */
+    @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     /**
@@ -211,7 +211,7 @@ public class NantBuilder extends Builder {
         }
         
         @Override
-        public boolean configure(StaplerRequest req) throws FormException{
+        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException{
         	// to persist global configuration information,
             // set that to properties and call save().
             
@@ -243,25 +243,20 @@ public class NantBuilder extends Builder {
         /**
          * Checks if the NANT_HOME is valid.
          */
-        public void doCheckNantHome( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
+        public FormValidation doCheckNantHome(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            new FormFieldValidator(req,rsp,true) {
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if(!f.isDirectory()) {
-                        error(f+" is not a directory");
-                        return;
-                    }
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            File f = new File(Util.fixNull(value));
+            if(!f.isDirectory()) {
+                return FormValidation.error(f+" is not a directory");
+            }
 
-                    File nantExe = new File(f,"bin/NAnt.exe");
-                    if(!nantExe.exists()) {
-                        error(f+" is not a NAnt installation directory.");
-                        return;
-                    }
+            File nantExe = new File(f,"bin/NAnt.exe");
+            if(!nantExe.exists()) {
+                return FormValidation.error(f+" is not a NAnt installation directory.");
+            }
 
-                    ok();
-                }
-            }.process();
+            return FormValidation.ok();
         }
     }
     
