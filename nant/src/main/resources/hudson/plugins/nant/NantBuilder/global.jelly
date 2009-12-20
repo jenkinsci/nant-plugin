@@ -1,0 +1,32 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<!--
+		This script is the view for the global configuration for the Nant Builder.
+		
+		To set the value of a form field, you can call methods on the descriptor class
+		using an EL-type syntax like ${descriptor.methodName()}
+	-->
+	<f:section title="Nant Builder" >
+		<f:entry title="Nant installation"
+      		description="List of Nant installations on this system">
+		    <f:repeatable var="inst" items="${descriptor.installations}">
+		        <table width="100%">
+		          <f:entry title="name" help="${rootURL}/../plugin/nant/help-globalConfig-name.html">
+		            <input class="setting-input" name="nant_name"
+		              type="text" value="${inst.name}"/>
+		          </f:entry>
+		
+		          <f:entry title="NANT_HOME" help="${rootURL}/../plugin/nant/help-globalConfig-NANT_HOME.html">
+		            <input class="setting-input validated" name="nant_home"
+		              type="text" value="${inst.nantHome}"
+		              checkUrl="'${rootURL}/builder/NantBuilder/checkNantHome?value='+escape(this.value)"/>
+		          </f:entry>
+		          <f:entry title="">
+		            <div align="right">
+		              <f:repeatableDeleteButton />
+		            </div>
+		          </f:entry>
+		        </table>
+		    </f:repeatable>
+    	</f:entry>
+	</f:section>
+</j:jelly>
