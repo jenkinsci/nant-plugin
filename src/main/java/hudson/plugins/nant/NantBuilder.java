@@ -14,6 +14,8 @@ import hudson.remoting.Callable;
 import hudson.tasks.Builder;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
+import hudson.util.VariableResolver;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -60,14 +62,20 @@ public class NantBuilder extends Builder {
      */
     private final String nantName;
     
+    /**
+     * The properties to pass to the NAnt build 
+     */
+    private final String properties;
+    
 	/**
 	 * When this builder is created in the project configuration step,
 	 * the builder object will be created from the strings below.
 	 * @param nantBuildFile	The name/location of the nant build fild
 	 * @param targets Whitespace separated list of nant targets to run
+	 * @param properties property definitions (in Java properties format)
 	 */
     @DataBoundConstructor
-    public NantBuilder(String nantBuildFile,String nantName, String targets) {
+    public NantBuilder(String nantBuildFile,String nantName, String targets, String properties) {
     	super();
     	if(nantBuildFile==null || nantBuildFile.trim().length()==0)
     		this.nantBuildFile = "";
@@ -80,6 +88,8 @@ public class NantBuilder extends Builder {
     		this.targets = "";
     	else
     		this.targets = targets;	
+    	
+    	this.properties = Util.fixEmptyAndTrim(properties);
     }
     
     /**
@@ -106,9 +116,16 @@ public class NantBuilder extends Builder {
     public String getNantName(){
     	return nantName;
     }
+    
+    public String getProperties()
+    {
+    	return this.properties;
+    }
 
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         ArgumentListBuilder args = new ArgumentListBuilder();
+        
+        VariableResolver<String> vr = build.getBuildVariableResolver();
         
         String execName;
         if(launcher.isUnix())
@@ -130,6 +147,8 @@ public class NantBuilder extends Builder {
         	args.add("-buildfile:"+nantBuildFile);
         }
         
+        args.addKeyValuePairsFromPropertyString("-D:", properties, vr);
+        
         //Remove all tabs, carriage returns, and newlines and replace them with
         //whitespaces, so that we can add them as parameters to the executable
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
@@ -140,8 +159,18 @@ public class NantBuilder extends Builder {
         //from the command line in windows, we must wrap it into cmd.exe.  This 
         //way the return code can be used to determine whether or not the build failed.
         if(!launcher.isUnix()) {
-            args.prepend("cmd.exe","/C");
             args.add("&&","exit","%%ERRORLEVEL%%");
+            
+            // From hudson.tasks.Ant:
+            //
+            // on Windows, proper double quote handling requires extra surrounding quote.
+            // so we need to convert the entire argument list once into a string,
+            // then build the new list so that by the time JVM invokes CreateProcess win32 API,
+            // it puts additional double-quote. See issue #1007
+            // the 'addQuoted' is necessary because Process implementation for Windows (at least in Sun JVM)
+            // is too clever to avoid putting a quote around it if the argument begins with "
+            // see "cmd /?" for more about how cmd.exe handles quotation.
+            args = new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(args.toStringWithQuote());
         }
 
         //Try to execute the command
@@ -193,8 +222,7 @@ public class NantBuilder extends Builder {
             load();
         }
     	
-    	@Override
-        protected void convert(Map<String,Object> oldPropertyBag) {
+    	protected void convert(Map<String,Object> oldPropertyBag) {
             if(oldPropertyBag.containsKey("installations"))
                 installations = (NantInstallation[]) oldPropertyBag.get("installations");
         }

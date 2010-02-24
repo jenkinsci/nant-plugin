@@ -22,4 +22,10 @@
 	<f:entry title="Targets" help="${rootURL}/../plugin/nant/help-Targets.html">
 		<f:textbox name="nantBuilder.targets" value="${instance.targets}" />
 	</f:entry>
+	
+	<f:advanced>
+		<f:entry title="Properties" help="${rootURL}/../plugin/nant/help-properties.html">
+			<f:textarea name="nantBuilder.properties" value="${instance.properties}" />
+		</f:entry>
+	</f:advanced>
 </j:jelly>
