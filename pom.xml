@@ -12,4 +12,12 @@
   <version>1.3-SNAPSHOT</version>
   <name>Hudson NAnt Plugin</name>
   <url>http://wiki.hudson-ci.org/display/HUDSON/NAnt+Plugin</url>
+  
+  <developers>
+    <developer>
+      <name>Justin Holzer</name>
+      <id>jholzer</id>
+      <email>jsholzer@gmail.com</email>
+    </developer>
+  </developers>
 </project>
