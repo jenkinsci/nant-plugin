@@ -43,6 +43,7 @@ import net.sf.json.JSONObject;
  * will be invoked. 
  * 
  * @author kyle.sweeney@valtech.com
+ * @author Justin Holzer (jsholzer@gmail.com)
  *
  */
 public class NantBuilder extends Builder {
