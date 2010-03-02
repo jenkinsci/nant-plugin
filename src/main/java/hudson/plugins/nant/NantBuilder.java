@@ -354,9 +354,9 @@ public class NantBuilder extends Builder {
         public static String getExecutableName()
         {
 			if (isWindows())
-				return "NAnt.exe";
+				return NantConstants.NANT_EXECUTABLE_WINDOWS;
 			
-			return "nant";
+			return NantConstants.NANT_EXECUTABLE_UNIX;
 		}
 
         /**
