@@ -128,11 +128,7 @@ public class NantBuilder extends Builder {
         
         VariableResolver<String> vr = build.getBuildVariableResolver();
         
-        String execName;
-        if(launcher.isUnix())
-            execName = "nant";
-        else
-            execName = "NAnt.exe";
+        String execName = NantInstallation.getExecutableName();
 
         //Get the path to the nant installation
         NantInstallation ni = getNant();
@@ -142,16 +138,17 @@ public class NantBuilder extends Builder {
             args.add(ni.getExecutable(launcher));
         }
         
-        //If a nant build file is specified, then add it as an argument, otherwise
-        //nant will search for any file that ends in .build
+        // If a nant build file is specified, then add it as an argument, otherwise
+        // nant will search for any file that ends in .build
         if(nantBuildFile != null && nantBuildFile.trim().length() > 0){
-        	args.add("-buildfile:"+nantBuildFile);
+        	args.add("-buildfile:" + nantBuildFile);
         }
         
+        // add the property declarations to the command line
         args.addKeyValuePairsFromPropertyString("-D:", properties, vr);
         
-        //Remove all tabs, carriage returns, and newlines and replace them with
-        //whitespaces, so that we can add them as parameters to the executable
+        // Remove all tabs, carriage returns, and newlines and replace them with
+        // spaces, so that we can add them as parameters to the executable
         String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
         if(normalizedTarget.trim().length()>0)
         	args.addTokenized(normalizedTarget);
@@ -175,7 +172,7 @@ public class NantBuilder extends Builder {
         }
 
         //Try to execute the command
-    	listener.getLogger().println("Executing command: "+args.toString());
+    	listener.getLogger().println("Executing command: " + args.toString());
     	Map<String,String> env = build.getEnvironment(listener);
         try {
             int r = launcher.launch().cmds(args).envs(env).stdout(listener).pwd(build.getModuleRoot()).join();
@@ -271,22 +268,32 @@ public class NantBuilder extends Builder {
         
         /**
          * Checks if the NANT_HOME is valid.
+         * @param value The value of the NANT_HOME field supplied by the user
          */
-        public FormValidation doCheckNantHome(@QueryParameter final String value) {
+        public FormValidation doCheckNantHome(@QueryParameter final String value)
+        {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER))
+            {
+            	return FormValidation.ok();
+            }
+            
             File f = new File(Util.fixNull(value));
-            if(!f.isDirectory()) {
+            
+            if(!f.isDirectory())
+            {
                 return FormValidation.error(f+" is not a directory");
             }
 
-            File nantExe = new File(f,"bin/NAnt.exe");
-            if(!nantExe.exists()) {
-                return FormValidation.error(f+" is not a NAnt installation directory.");
+            NantInstallation nantInstall = new NantInstallation("", f.getAbsolutePath());
+            
+            if(!nantInstall.getExecutableFile().exists()) {
+                return FormValidation.error(f + " is not a NAnt installation directory.");
             }
 
             return FormValidation.ok();
-        }
+        }        
+        
     }
     
     public static final class NantInstallation implements Serializable {
@@ -312,25 +319,53 @@ public class NantBuilder extends Builder {
             return name;
         }
 
-        public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
-            return launcher.getChannel().call(new Callable<String,IOException>() {
-                public String call() throws IOException {
-                    File exe = getExeFile();
-                    if(exe.exists())
-                        return exe.getPath();
-                    throw new IOException(exe.getPath()+" doesn't exist");
-                }
-            });
+        @SuppressWarnings("serial")
+		public String getExecutable(Launcher launcher) throws IOException, InterruptedException {
+            return 
+            	launcher.getChannel().call
+            	(
+        			new Callable<String,IOException>()
+	        		{
+		                public String call() throws IOException
+		                {
+		                    File exe = getExecutableFile();
+		                    if(exe.exists())
+		                        return exe.getPath();
+		                    
+		                    throw new IOException(exe.getPath() + " doesn't exist");
+		                }
+	        		}
+    			);
         }
 
-        private File getExeFile() {
-            String execName;
-            if(File.separatorChar=='\\')
-                execName = "NAnt.exe";
-            else
-                execName = "NAnt";
+        /**
+         * Returns the NAnt executable as a {@link File}
+         * @return the NAnt executable as a {@link File}
+         */
+        public File getExecutableFile()
+        {
+            return new File(getNantHome(), "bin/" + getExecutableName());
+        }
+        
+        /**
+         * Returns the name of the NAnt executable for the current platform
+         * @return the name of the NAnt executable for the current platform
+         */
+        public static String getExecutableName()
+        {
+			if (isWindows())
+				return "NAnt.exe";
+			
+			return "nant";
+		}
 
-            return new File(getNantHome(),"bin/"+execName);
+        /**
+         * Returns true if this NAnt Installation will be executed in a Windows environment
+         * @return true if this NAnt Installation will be executed in a Windows environment
+         */
+		public static boolean isWindows()
+        {
+        	return System.getProperty("os.name").startsWith("Windows");
         }
 
         /**
@@ -340,7 +375,7 @@ public class NantBuilder extends Builder {
             LocalLauncher launcher = new LocalLauncher(TaskListener.NULL);
             return launcher.getChannel().call(new Callable<Boolean,IOException>() {
                 public Boolean call() throws IOException {
-                    return getExeFile().exists();
+                    return getExecutableFile().exists();
                 }
             });
         }
