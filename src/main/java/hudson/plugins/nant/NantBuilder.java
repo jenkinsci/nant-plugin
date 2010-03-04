@@ -2,6 +2,7 @@ package hudson.plugins.nant;
 
 import hudson.CopyOnWrite;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -133,7 +134,7 @@ public class NantBuilder extends Builder {
         //Get the path to the nant installation
         NantInstallation ni = getNant();
         if(ni==null) {
-            args.add(execName);
+            args.add(launcher.isUnix() ? NantConstants.NANT_EXECUTABLE_UNIX : NantConstants.NANT_EXECUTABLE_WINDOWS);
         } else {
             args.add(ni.getExecutable(launcher));
         }
@@ -353,20 +354,11 @@ public class NantBuilder extends Builder {
          */
         public static String getExecutableName()
         {
-			if (isWindows())
+			if (Functions.isWindows())
 				return NantConstants.NANT_EXECUTABLE_WINDOWS;
 			
 			return NantConstants.NANT_EXECUTABLE_UNIX;
 		}
-
-        /**
-         * Returns true if this NAnt Installation will be executed in a Windows environment
-         * @return true if this NAnt Installation will be executed in a Windows environment
-         */
-		public static boolean isWindows()
-        {
-        	return System.getProperty("os.name").startsWith("Windows");
-        }
 
         /**
          * Returns true if the executable exists.
