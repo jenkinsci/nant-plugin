@@ -158,18 +158,7 @@ public class NantBuilder extends Builder {
         //from the command line in windows, we must wrap it into cmd.exe.  This 
         //way the return code can be used to determine whether or not the build failed.
         if(!launcher.isUnix()) {
-            args.add("&&","exit","%%ERRORLEVEL%%");
-            
-            // From hudson.tasks.Ant:
-            //
-            // on Windows, proper double quote handling requires extra surrounding quote.
-            // so we need to convert the entire argument list once into a string,
-            // then build the new list so that by the time JVM invokes CreateProcess win32 API,
-            // it puts additional double-quote. See issue #1007
-            // the 'addQuoted' is necessary because Process implementation for Windows (at least in Sun JVM)
-            // is too clever to avoid putting a quote around it if the argument begins with "
-            // see "cmd /?" for more about how cmd.exe handles quotation.
-            args = new ArgumentListBuilder().add("cmd.exe", "/C").addQuoted(args.toStringWithQuote());
+            args = args.toWindowsCommand();
         }
 
         //Try to execute the command
