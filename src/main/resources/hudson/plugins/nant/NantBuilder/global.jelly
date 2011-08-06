@@ -10,12 +10,12 @@
       		description="List of Nant installations on this system">
 		    <f:repeatable var="inst" items="${descriptor.installations}">
 		        <table width="100%">
-		          <f:entry title="name" help="${rootURL}/../plugin/nant/help-globalConfig-name.html">
+		          <f:entry title="name" help="/plugin/nant/help-globalConfig-name.html">
 		            <input class="setting-input" name="nant_name"
 		              type="text" value="${inst.name}"/>
 		          </f:entry>
 		
-		          <f:entry title="NANT_HOME" help="${rootURL}/../plugin/nant/help-globalConfig-NANT_HOME.html">
+		          <f:entry title="NANT_HOME" help="/plugin/nant/help-globalConfig-NANT_HOME.html">
 		            <input class="setting-input validated" name="nant_home"
 		              type="text" value="${inst.nantHome}"
 		              checkUrl="'${rootURL}/builder/NantBuilder/checkNantHome?value='+escape(this.value)"/>

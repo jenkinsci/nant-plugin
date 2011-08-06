@@ -16,15 +16,15 @@
 	      </j:forEach>
 	    </select>
   	</f:entry>
-	<f:entry title="Nant Build File" help="${rootURL}/../plugin/nant/help-BuildFile.html">
+	<f:entry title="Nant Build File" help="/plugin/nant/help-BuildFile.html">
 		<f:textbox name="nantBuilder.nantBuildFile" value="${instance.nantBuildFile}" />
 	</f:entry>
-	<f:entry title="Targets" help="${rootURL}/../plugin/nant/help-Targets.html">
+	<f:entry title="Targets" help="/plugin/nant/help-Targets.html">
 		<f:textbox name="nantBuilder.targets" value="${instance.targets}" />
 	</f:entry>
 	
 	<f:advanced>
-		<f:entry title="Properties" help="${rootURL}/../plugin/nant/help-properties.html">
+		<f:entry title="Properties" help="/plugin/nant/help-properties.html">
 			<f:textarea name="nantBuilder.properties" value="${instance.properties}" />
 		</f:entry>
 	</f:advanced>
