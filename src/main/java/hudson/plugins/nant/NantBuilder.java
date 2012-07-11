@@ -12,7 +12,9 @@ import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
+import hudson.model.AbstractProject;
 import hudson.tasks.Builder;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
@@ -190,7 +192,7 @@ public class NantBuilder extends Builder {
      * Descriptor for {@link NantBuilder}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
      */
-    public static final class DescriptorImpl extends Descriptor<Builder> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
          * To persist global configuration information,
          * simply store it in a field and call save().
@@ -224,6 +226,11 @@ public class NantBuilder extends Builder {
         
         public NantInstallation[] getInstallations() {
             return installations;
+        }
+
+		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+            // Indicates that this builder can be used with all kinds of project types 
+            return true;
         }
         
         @Override
