@@ -150,9 +150,9 @@ public class NantBuilder extends Builder {
         // add the property declarations to the command line
         args.addKeyValuePairsFromPropertyString("-D:", properties, vr);
         
-        // Remove all tabs, carriage returns, and newlines and replace them with
+        // Remove all commas, tabs, carriage returns, and newlines and replace them with
         // spaces, so that we can add them as parameters to the executable
-        String normalizedTarget = targets.replaceAll("[\t\r\n]+"," ");
+        String normalizedTarget = targets.replaceAll("[,\t\r\n]+"," ");
         if(normalizedTarget.trim().length()>0)
         	args.addTokenized(normalizedTarget);
         
