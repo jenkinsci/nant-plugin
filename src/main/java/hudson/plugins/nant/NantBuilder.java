@@ -19,6 +19,7 @@ import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.util.VariableResolver;
 
+import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -42,7 +43,7 @@ import net.sf.json.JSONObject;
  * to remember the configuration.
  *
  * <p>
- * When a build is performed, the {@link #perform(Build, Launcher, BuildListener)} method
+ * When a build is performed, the {@code #perform(Build, Launcher, BuildListener)} method
  * will be invoked. 
  * 
  * @author kyle.sweeney@valtech.com
@@ -109,7 +110,7 @@ public class NantBuilder extends Builder {
     }
 
     /**
-     * We'll use these from the <tt>config.jelly</tt>.
+     * We'll use these from the <code>config.jelly</code>.
      */
     public String getTargets() {
         return targets;
@@ -198,7 +199,7 @@ public class NantBuilder extends Builder {
          * simply store it in a field and call save().
          *
          * <p>
-         * If you don't want fields to be persisted, use <tt>transient</tt>.
+         * If you don't want fields to be persisted, use <code>transient</code>.
          */
     	public static String PARAMETERNAME_PATH_TO_NANT = "pathToNant";
     	
@@ -323,7 +324,12 @@ public class NantBuilder extends Builder {
             	(
         			new Callable<String,IOException>()
 	        		{
-		                public String call() throws IOException
+                        @Override
+                        public void checkRoles(RoleChecker checker) throws SecurityException {
+
+                        }
+
+                        public String call() throws IOException
 		                {
 		                    File exe = getExecutableFile();
 		                    if(exe.exists())
@@ -362,6 +368,11 @@ public class NantBuilder extends Builder {
         public boolean getExists() throws IOException, InterruptedException {
             LocalLauncher launcher = new LocalLauncher(TaskListener.NULL);
             return launcher.getChannel().call(new Callable<Boolean,IOException>() {
+                @Override
+                public void checkRoles(RoleChecker checker) throws SecurityException {
+
+                }
+
                 public Boolean call() throws IOException {
                     return getExecutableFile().exists();
                 }
