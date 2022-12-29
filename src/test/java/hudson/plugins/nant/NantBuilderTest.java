@@ -1,13 +1,15 @@
 package hudson.plugins.nant;
 
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the behavior of NantBuilder during construction
  * 
  * @author Justin Holzer (jsholzer@gmail.com)
  */
-public class NantBuilderTest extends HudsonTestCase
+public class NantBuilderTest extends JenkinsRule
 {
 	/**
 	 * The nantBuildFile property should be set as the empty string if
