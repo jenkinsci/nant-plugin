@@ -110,7 +110,7 @@ public class NantBuilder extends Builder {
     }
 
     /**
-     * We'll use these from the <code>config.jelly</tt>.
+     * We'll use these from the <code>config.jelly</code>.
      */
     public String getTargets() {
         return targets;
@@ -199,7 +199,7 @@ public class NantBuilder extends Builder {
          * simply store it in a field and call save().
          *
          * <p>
-         * If you don't want fields to be persisted, use <code>transient</tt>.
+         * If you don't want fields to be persisted, use <code>transient</code>.
          */
     	public static String PARAMETERNAME_PATH_TO_NANT = "pathToNant";
     	
